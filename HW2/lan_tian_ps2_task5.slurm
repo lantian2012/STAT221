@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J Pset2_Task3 # name for job array
+#SBATCH -J Pset2_Task5 # name for job array
 #SBATCH -o all.out #Standard output
 #SBATCH -e all.err #Standard error
 #SBATCH -p stats #Partition
