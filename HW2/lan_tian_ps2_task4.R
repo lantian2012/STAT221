@@ -8,7 +8,7 @@ job.id = args[1]
 
 source("poissonLogN_MCMC.R")
 source("Lan_Tian_ps2_functions.R")
-w = read.table('weights.txt')
+w = read.table('weights.txt')[[1]]
 
 select = job.id%%4
 if (select == 0)
