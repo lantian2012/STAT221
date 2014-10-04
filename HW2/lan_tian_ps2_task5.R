@@ -35,8 +35,8 @@ for (nt in 1:Ntheta){
   logtheta0 = rASL(J, x0, m, b)
   Covered95 = matrix(nrow=J, ncol=Ny)
   Covered68 = matrix(nrow=J, ncol=Ny)
+  theta0 = exp(logtheta0)
   for (ny in 1:Ny){
-    theta0 = exp(logtheta0)
     Y = simYgivenTheta(theta0, w, 2)
     postlogtheta = poisson.logn.mcmc(Y, w)[["logTheta"]]
     Covered95[,ny] = isCovered95(postlogtheta, logtheta0)
