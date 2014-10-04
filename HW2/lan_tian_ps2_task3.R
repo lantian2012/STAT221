@@ -46,4 +46,4 @@ for (nt in 1:Ntheta){
 }
 #logtheta a matrix of logtheta, each column 25 sim combined
 #coverage95 a matrix, each column the coverage by 25 sim combined
-save(job.id, logtheta, coverage95, coverage68, means, stds, file=sprintf("out/task2_coverage_%d.rda", job.id))
+save(job.id, logtheta, coverage95, coverage68, means, stds, file=sprintf("out/task3_coverage_%d.rda", job.id))
