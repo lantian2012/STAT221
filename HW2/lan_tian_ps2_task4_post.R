@@ -12,10 +12,14 @@ df1 = data.frame()
 df2 = data.frame()
 df3 = data.frame()
 df4 = data.frame()
+m = list()
+s = list()
 for (i in 1:4){
   merge68 = list()
   merge95 = list()
   mergetheta = list()
+  mergemean = list()
+  mergestd = list()
   for (j in 1:3){
     name = paste('out/Task4_coverage_', (i)+(j-1)*4, '.rda',sep="")
     load(name)
@@ -23,10 +27,14 @@ for (i in 1:4){
     merge68[[j]] = coverage68  
     merge95[[j]] = coverage95
     mergetheta[[j]] = logtheta
+    mergemean[[j]] = means
+    mergestd[[j]] = stds
   }
   df68 = cbind(merge68[[1]], merge68[[2]], merge68[[3]])
   df95 = cbind(merge95[[1]], merge95[[2]], merge95[[3]])
   dftheta = cbind(mergetheta[[1]], mergetheta[[2]], mergetheta[[3]])
+  m[[i]] = cbind(mergemean[[1]], mergemean[[2]], mergemean[[3]])
+  s[[i]] = cbind(mergestd[[1]], mergestd[[2]], mergestd[[3]])
   if (i==1){
     df1 = data.frame(w, as.vector(dftheta), as.vector(df68), as.vector(df95))
     df1['logw'] = log(df1$w)
@@ -96,3 +104,17 @@ for (i in 1:4){
     write(t(as.matrix(df4[, c(5,3,4)])), file='data/lan_tian_ps2_task4_par4_w.dat', ncolumns=3)
   }
 }
+
+mm = list()
+ss = list()
+for (i in 1:4){
+  mm[[i]]=as.vector(m[[i]])
+  print(paste('Task 4 Group',i,'Mean' ))
+  print(summary(mm[[i]]))
+  ss[[i]]=as.vector(s[[i]])
+  print(paste('Task 4 Group',i,'Standard Deviation' ))
+  print(summary(ss[[i]]))
+}
+
+
+

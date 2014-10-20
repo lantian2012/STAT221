@@ -2,7 +2,7 @@
 args <- as.numeric(commandArgs(trailingOnly = TRUE))
 
 if(length(args) != 1) {
-  stop("Not correct no. of args")
+  args[1] = 1
 }
 job.id = args[1]
 
