@@ -6,8 +6,8 @@ if(length(args) != 1) {
 job.id = args[1]
 select = ceiling(job.id/10)
 selecta = job.id%%10
-if (select1 == 0)
-  select = 10
+if (selecta == 0)
+  selecta = 10
 
 source('lan_tian_ps3_functions.R')
 library(mvtnorm)
