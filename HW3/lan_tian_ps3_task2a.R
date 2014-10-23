@@ -39,12 +39,15 @@ sgd<-function(data, plot = T){
   n = nrow(data$X)
   p = ncol(data$X)
   theta.sgd = matrix(0.1, nrow = p, ncol = n+1)
-  a = 0.01/(0.01/sum(diag(data$A))+seq(1, n))
+  #a = 0.01/(0.01/sum(diag(data$A))+seq(1, n))
+  gamma0 = 1 / sum(c(rep(1, 3), rep(0.02, 97)))
+  lambda0 = 0.02
+  
   for (i in 1:n){
     xi = data$X[i, ]
+    ai = gamma0 / (1 + gamma0 * lambda0 * i)
     theta.old = theta.sgd[, i]
-    #a[i] = 1/(1+0.02*i)
-    theta.new = theta.old + a[i]*(data$A %*% (xi-theta.old))
+    theta.new = theta.old + ai*(data$A %*% (xi-theta.old))
     theta.sgd[, i+1] = theta.new
   }
   if (plot){
@@ -59,12 +62,15 @@ sgd.im<-function(data, plot = T){
   n = nrow(data$X)
   p = ncol(data$X)
   theta.sgd = matrix(0.1, nrow = p, ncol = n+1)
-  a = 0.01/(0.01/sum(diag(data$A))+seq(1, n))
+  #a = 0.01/(0.01/sum(diag(data$A))+seq(1, n))
   #a = (1+0.02*seq(1, n))^(-2/3)
+  gamma0 = 1 / sum(c(rep(1, 3), rep(0.02, 97)))
+  lambda0 = 0.02
   for (i in 1:n){
     xi = data$X[i, ]
     theta.old = theta.sgd[, i]
-    theta.new = solve(diag(p) + a[i]*data$A)%*%(theta.old + a[i]*(data$A %*% xi))
+    ai = gamma0 / (1 + gamma0 * lambda0 * i)
+    theta.new = solve(diag(p) + ai*data$A)%*%(theta.old + ai*(data$A %*% xi))
     theta.sgd[, i+1] = theta.new
   }
   if (plot){
