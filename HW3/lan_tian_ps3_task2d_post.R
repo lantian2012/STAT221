@@ -85,28 +85,3 @@ data.asgd = melt(data.asgd, id='X')
 colnames(data.asgd)[2] = 'alpha'
 ggplot(data.asgd, aes(x = X, y = value, color = alpha)) + geom_line() + ylab('Trace of Variance')+ xlab('Iterations')
 ggsave(file='fig/lan_tian_ps2_task2d_asgd.png', width=5, heigh=5, dpi=120)
-
-
-data.asgd = matrix(ncol=201, nrow=10)
-for (j in 21:30){
-  name = paste('out/Task2c_job_', j, '.rda',sep="")
-  load(name)
-  data.temp = matrix(ncol=200, nrow=500)
-  for (i in 1:length(theta.list)){
-    est.bias = apply(theta.list[[i]], 2, function(colum) 
-      sum(diag((colum-theta)%*%t(colum-theta))))
-    data.temp[i, ] = est.var
-  }
-  data.asgd[j-20, ] = c(a, apply(data.temp, 2, mean))
-}
-
-data.asgd = data.frame(t(data.asgd))
-colnames(data.asgd) = data.asgd[1, ]
-data.asgd = data.asgd[-1,]
-data.asgd['X'] = seq(1, 10000, 50)
-data.asgd = melt(data.asgd, id='X')
-colnames(data.asgd)[2] = 'alpha'
-ggplot(data.asgd, aes(x = X, y = value, color = alpha)) + geom_line()
-ggsave(file='fig/lan_tian_ps2_task2d_asgd.png', width=5, heigh=5, dpi=120)
-
-

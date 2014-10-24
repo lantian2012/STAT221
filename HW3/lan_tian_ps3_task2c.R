@@ -187,4 +187,4 @@ for (rep in 1:m){
   theta.list[[rep]] = theta
 }
 
-save(theta.list, a, select,file=sprintf("out/task2c_job_%d.rda", job.id))
+save(theta.list, a, A, select,file=sprintf("out/task2c_job_%d.rda", job.id))
