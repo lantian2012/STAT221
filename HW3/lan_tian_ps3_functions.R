@@ -18,6 +18,7 @@ plot.all <- function(data, est){
   x = matrix(seq(1, length(est[[1]])))
   agg = data.frame(est, x)
   agg = melt(agg, id = 'x')
-  ggplot(agg, aes(x = x, y = value, color = variable)) + geom_line()+scale_x_log10()
-  ggsave(file='fig/lan_tian_ps2_task2b.png', width=5, heigh=5, dpi=120)
+  ggplot(agg, aes(x = x, y = value, color = variable)) + geom_line()+
+    scale_x_log10(limits=c(200, 1e5))+ylab('excess risk(after log)')+ xlab('Iterations')
+  ggsave(file='fig/lan_tian_ps2_task2b.png', width=5, heigh=5, dpi=200)
 }

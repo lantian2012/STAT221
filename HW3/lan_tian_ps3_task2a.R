@@ -29,25 +29,28 @@ plot.all <-function(data, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, th
     log(t(colum) %*% data$A %*% (colum)))
   x = seq(1, length(theta.batch))
   agg = data.frame(x, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im)
+  select = c(floor(1.1^(1:72)), 1e4)
+  agg = agg[select, ]
   agg = melt(agg, id = 'x')
-  ggplot(agg, aes(x = x, y = value, color = variable)) + geom_line()+scale_x_log10()
-  ggsave(file='fig/lan_tian_ps2_task2a.png', width=5, heigh=5, dpi=120)
+  ggplot(agg, aes(x = x, y = value, color = variable)) + geom_line()+scale_x_log10()+
+    xlab('Iterations')+ylab('excess risk')
+  ggsave(file='fig/lan_tian_ps3_task2a.png', width=8, heigh=5, dpi=150)
 }
 
 
 sgd<-function(data, plot = T){
   n = nrow(data$X)
   p = ncol(data$X)
-  theta.sgd = matrix(0.1, nrow = p, ncol = n+1)
+  theta.sgd = matrix(1, nrow = p, ncol = n+1)
   #a = 0.01/(0.01/sum(diag(data$A))+seq(1, n))
-  gamma0 = 1 / sum(c(rep(1, 3), rep(0.02, 97)))
+  gamma0 = 1
   lambda0 = 0.02
   
   for (i in 1:n){
     xi = data$X[i, ]
     ai = gamma0 / (1 + gamma0 * lambda0 * i)
     theta.old = theta.sgd[, i]
-    theta.new = theta.old + ai*(data$A %*% (xi-theta.old))
+    theta.new = theta.old + ai*(2*data$A %*% (xi-theta.old))
     theta.sgd[, i+1] = theta.new
   }
   if (plot){
@@ -61,16 +64,14 @@ sgd<-function(data, plot = T){
 sgd.im<-function(data, plot = T){
   n = nrow(data$X)
   p = ncol(data$X)
-  theta.sgd = matrix(0.1, nrow = p, ncol = n+1)
-  #a = 0.01/(0.01/sum(diag(data$A))+seq(1, n))
-  #a = (1+0.02*seq(1, n))^(-2/3)
-  gamma0 = 1 / sum(c(rep(1, 3), rep(0.02, 97)))
+  theta.sgd = matrix(1, nrow = p, ncol = n+1)
+  gamma0 = 1
   lambda0 = 0.02
   for (i in 1:n){
     xi = data$X[i, ]
     theta.old = theta.sgd[, i]
     ai = gamma0 / (1 + gamma0 * lambda0 * i)
-    theta.new = solve(diag(p) + ai*data$A)%*%(theta.old + ai*(data$A %*% xi))
+    theta.new = solve(diag(p) + ai*2*data$A)%*%(theta.old + ai*(2*data$A %*% xi))
     theta.sgd[, i+1] = theta.new
   }
   if (plot){
@@ -84,13 +85,13 @@ sgd.im<-function(data, plot = T){
 asgd<-function(data, plot = T){
   n = nrow(data$X)
   p = ncol(data$X)
-  theta.asgd = matrix(0.1, nrow = p, ncol = n+1)
+  theta.asgd = matrix(1, nrow = p, ncol = n+1)
   theta.sgd = matrix(0, nrow = p, ncol = 1)
   a = (1+0.02*seq(1, n))^(-2/3)
   for (i in 1:n){
     xi = data$X[i, ]
     theta.old = theta.sgd[, 1]
-    theta.new = theta.old + a[i]*(data$A %*% (xi - theta.old))
+    theta.new = theta.old + a[i]*(2*data$A %*% (xi - theta.old))
     theta.sgd[, 1] = theta.new
     theta.new = (1-1/(i+1))*theta.asgd[, i] + 1/(i+1)*theta.new
     theta.asgd[, i+1] = theta.new
@@ -106,15 +107,15 @@ asgd<-function(data, plot = T){
 asgd.bad<-function(data, plot = T){
   n = nrow(data$X)
   p = ncol(data$X)
-  theta.asgd = matrix(0.1, nrow = p, ncol = n+1)
+  theta.asgd = matrix(1, nrow = p, ncol = n+1)
+  theta.sgd = matrix(0, nrow = p, ncol = 1)
   a = (1+seq(1, n))^(-0.5)
   for (i in 1:n){
     xi = data$X[i, ]
-    theta.old = theta.asgd[, i]
-    theta.new = theta.old + a[i]*(data$A %*% (xi - theta.old))
-    if (i > 1){
-      theta.new = (1-1/i)*theta.old + 1/i*theta.new
-    }
+    theta.old = theta.sgd[, 1]
+    theta.new = theta.old + a[i]*(2*data$A %*% (xi - theta.old))
+    theta.sgd[, 1] = theta.new
+    theta.new = (1-1/(i+1))*theta.asgd[, i] + 1/(i+1)*theta.new
     theta.asgd[, i+1] = theta.new
   }
   if (plot){
@@ -129,7 +130,6 @@ batch <- function(data, plot = T){
   n = nrow(data$X)
   p = ncol(data$X)
   theta.batch = matrix(0, nrow = p, ncol = n+1)
-  a = (1+seq(1, n))^(-0.5)
   for (i in 1:n){
     xi = data$X[i, ]
     if (i == 1){
@@ -150,10 +150,11 @@ batch <- function(data, plot = T){
 }
 
 
-d = sample.data2a(1e4)
+d = sample.data2a(1e6)
 theta.sgd = sgd(d, F)
 theta.sgd.im = sgd.im(d, F)
 theta.asgd = asgd(d, F)
 theta.asgd.bad = asgd.bad(d, F)
 theta.batch = batch(d, F)
 plot.all(d, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im)
+save(d, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im, file="out/task2a.rda")
