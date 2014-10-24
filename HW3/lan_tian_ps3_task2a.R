@@ -149,12 +149,12 @@ batch <- function(data, plot = T){
   }
 }
 
-
+select = seq(1, 1e6, 50)
 d = sample.data2a(1e6)
-theta.sgd = sgd(d, F)
-theta.sgd.im = sgd.im(d, F)
-theta.asgd = asgd(d, F)
-theta.asgd.bad = asgd.bad(d, F)
-theta.batch = batch(d, F)
+theta.sgd = sgd(d, F)[, select]
+theta.sgd.im = sgd.im(d, F)[, select]
+theta.asgd = asgd(d, F)[, select]
+theta.asgd.bad = asgd.bad(d, F)[, select]
+theta.batch = batch(d, F)[, select]
 #plot.all(d, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im)
 save(d, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im, file="out/task2a.rda")
