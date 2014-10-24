@@ -16,26 +16,26 @@ plot.risk2a <- function(data, est) {
   plot(x, est.bias, type="l", lty=3)
 }
 
-# plot.all <-function(data, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im){
-#   theta.sgd  = apply(theta.sgd, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   theta.asgd  = apply(theta.asgd, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   theta.asgd.bad  = apply(theta.asgd.bad, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   theta.batch  = apply(theta.batch, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   theta.sgd.im = apply(theta.sgd.im, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   x = seq(1, length(theta.batch))
-#   agg = data.frame(x, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im)
-#   select = c(floor(1.1^(1:72)), 1e4)
-#   agg = agg[select, ]
-#   agg = melt(agg, id = 'x')
-#   ggplot(agg, aes(x = x, y = value, color = variable)) + geom_line()+scale_x_log10()+
-#     xlab('Iterations')+ylab('excess risk')
-#   ggsave(file='fig/lan_tian_ps3_task2a.png', width=8, heigh=5, dpi=150)
-# }
+plot.all <-function(data, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im){
+  theta.sgd  = apply(theta.sgd, 2, function(colum) 
+    log(t(colum) %*% data$A %*% (colum)))
+  theta.asgd  = apply(theta.asgd, 2, function(colum) 
+    log(t(colum) %*% data$A %*% (colum)))
+  theta.asgd.bad  = apply(theta.asgd.bad, 2, function(colum) 
+    log(t(colum) %*% data$A %*% (colum)))
+  theta.batch  = apply(theta.batch, 2, function(colum) 
+    log(t(colum) %*% data$A %*% (colum)))
+  theta.sgd.im = apply(theta.sgd.im, 2, function(colum) 
+    log(t(colum) %*% data$A %*% (colum)))
+  x = seq(1, length(theta.batch))
+  agg = data.frame(x, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im)
+  select = c(floor(1.1^(1:72)), 1e4)
+  agg = agg[select, ]
+  agg = melt(agg, id = 'x')
+  ggplot(agg, aes(x = x, y = value, color = variable)) + geom_line()+scale_x_log10()+
+    xlab('Iterations')+ylab('excess risk')
+  ggsave(file='fig/lan_tian_ps3_task2a.png', width=8, heigh=5, dpi=150)
+}
 
 
 sgd<-function(data, plot = T){
@@ -150,11 +150,5 @@ batch <- function(data, plot = T){
 }
 
 
-d = sample.data2a(1e4)
-theta.sgd = sgd(d, F)
-theta.sgd.im = sgd.im(d, F)
-theta.asgd = asgd(d, F)
-theta.asgd.bad = asgd.bad(d, F)
-theta.batch = batch(d, F)
-#plot.all(d, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im)
-save(d, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im, file="out/task2a.rda")
+load("out/task2a.rda")
+plot.all(d, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im)
