@@ -150,7 +150,7 @@ batch <- function(data, plot = T){
 }
 
 
-d = sample.data2a(1e4)
+d = sample.data2a(1e6)
 theta.sgd = sgd(d, F)
 theta.sgd.im = sgd.im(d, F)
 theta.asgd = asgd(d, F)
