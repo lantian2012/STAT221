@@ -44,7 +44,6 @@ sgd <- function(data, plot=T) {
   # check.data(data)
   n = nrow(data$X)
   p = ncol(data$X)
-  I = diag(p)
   # matrix of estimates of SGD (p x iters)
   theta.sgd = matrix(0, nrow = p, ncol = n)
   # params for the learning rate seq.
@@ -71,7 +70,6 @@ sgd.im <- function(data, plot=T) {
   # check.data(data)
   n = nrow(data$X)
   p = ncol(data$X)
-  I = diag(p)
   # matrix of estimates of SGD (p x iters)
   theta.sgd = matrix(0, nrow = p, ncol = n)
   # params for the learning rate seq.

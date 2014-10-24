@@ -12,14 +12,19 @@ if (selecta == 0)
 source('lan_tian_ps3_functions.R')
 library(mvtnorm)
 
-sample.data <- function(dim.n, dim.p, model="gaussian") {
-  # Samples the covariates as normal with the specific correlation
-  
+generate.A <- function(p) {
   # Create A matrix (variance of the covariates xn)
-  Q = random.orthogonal(p=dim.p)
-  lambdas = seq(0.01, 1, length.out=dim.p)
+  Q = random.orthogonal(p)
+  lambdas = seq(0.01, 1, length.out=p)
   A = Q %*% diag(lambdas) %*% t(Q)
-  
+  return(A)
+}
+
+sample.data <- function(dim.n, A, 
+                        model="gaussian") {
+  # Samples the dataset. Returns a list with (Y, X, A ,true theta)
+  dim.p = nrow(A)
+  # This call will make the appropriate checks on A.
   X = rmvnorm(dim.n, mean=rep(0, dim.p), sigma=A)
   theta = matrix(1, ncol=1, nrow=dim.p)
   epsilon = rnorm(dim.n, mean=0, sd=1)
@@ -55,7 +60,6 @@ sgd <- function(data, plot=T, alpha=0) {
   # check.data(data)
   n = nrow(data$X)
   p = ncol(data$X)
-  I = diag(p)
   # matrix of estimates of SGD (p x iters)
   theta.sgd = matrix(0, nrow = p, ncol = n)
   # params for the learning rate seq.
@@ -85,7 +89,6 @@ sgd.im <- function(data, plot=T, alpha = 0) {
   # check.data(data)
   n = nrow(data$X)
   p = ncol(data$X)
-  I = diag(p)
   # matrix of estimates of SGD (p x iters)
   theta.sgd = matrix(0, nrow = p, ncol = n)
   # params for the learning rate seq.
@@ -174,11 +177,11 @@ a = seq(20, 200, length.out=10)
 a = a[selecta]
 
 m = 500
-
+A = generate.A(100)
 theta.list = list()
 
 for (rep in 1:m){
-  y = sample.data(dim.n = 10000, dim.p=100)
+  y = sample.data(dim.n = 10000, A)
   theta = method(data=y, plot=F, alpha=a)
   theta = theta[, seq(1, 10000, 50)]
   theta.list[[rep]] = theta
