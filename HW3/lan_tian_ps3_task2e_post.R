@@ -15,15 +15,19 @@ for (j in 1:10){
   p = nrow(theta.list[[1]])
   M = length(theta.list)
   I = diag(p)
+  #the theoretical variance matrix
   var.theoretical = a * solve(2 * a * A - I) %*% A
   theta.var = matrix(nrow = 1, ncol = N+1)
   theta.var[1] = a
   for (n in 1:N){
     theta.n = matrix(ncol = p, nrow = M)
+    #get data from m repetitions 
     for (m in 1:M){
       theta.n[m, ] = theta.list[[m]][ , n]
     }
+    #get empirical variance for each theta.
     var.empirical = (a/sum(diag(A))+1+(N-1)*50)/a*cov(theta.n)
+    #the distance between theoretical and empirical
     theta.var[n+1] = sqrt.norm(var.empirical - var.theoretical)
   }
   var.agg[j, ]= theta.var
@@ -32,6 +36,7 @@ for (j in 1:10){
 data.sgd = data.frame(t(var.agg))
 colnames(data.sgd) = data.sgd[1, ]
 data.sgd = data.sgd[-1,]
+#data are collected every 50 repetitions 
 data.sgd['X'] = seq(1, 10000, 50)
 data.sgd = melt(data.sgd, id='X')
 colnames(data.sgd)[2] = 'alpha'

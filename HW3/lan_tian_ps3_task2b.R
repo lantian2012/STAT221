@@ -41,7 +41,6 @@ plot.risk <- function(data, est) {
 }
 
 sgd <- function(data, plot=T) {
-  # check.data(data)
   n = nrow(data$X)
   p = ncol(data$X)
   # matrix of estimates of SGD (p x iters)

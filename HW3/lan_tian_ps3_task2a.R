@@ -16,40 +16,21 @@ plot.risk2a <- function(data, est) {
   plot(x, est.bias, type="l", lty=3)
 }
 
-# plot.all <-function(data, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im){
-#   theta.sgd  = apply(theta.sgd, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   theta.asgd  = apply(theta.asgd, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   theta.asgd.bad  = apply(theta.asgd.bad, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   theta.batch  = apply(theta.batch, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   theta.sgd.im = apply(theta.sgd.im, 2, function(colum) 
-#     log(t(colum) %*% data$A %*% (colum)))
-#   x = seq(1, length(theta.batch))
-#   agg = data.frame(x, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im)
-#   select = c(floor(1.1^(1:72)), 1e4)
-#   agg = agg[select, ]
-#   agg = melt(agg, id = 'x')
-#   ggplot(agg, aes(x = x, y = value, color = variable)) + geom_line()+scale_x_log10()+
-#     xlab('Iterations')+ylab('excess risk')
-#   ggsave(file='fig/lan_tian_ps3_task2a.png', width=8, heigh=5, dpi=150)
-# }
-
 
 sgd<-function(data, plot = T){
   n = nrow(data$X)
   p = ncol(data$X)
   theta.sgd = matrix(1, nrow = p, ncol = n+1)
-  #a = 0.01/(0.01/sum(diag(data$A))+seq(1, n))
+  #params for learning rate
   gamma0 = 1
   lambda0 = 0.02
   
   for (i in 1:n){
     xi = data$X[i, ]
+    #learning rate
     ai = gamma0 / (1 + gamma0 * lambda0 * i)
     theta.old = theta.sgd[, i]
+    #update
     theta.new = theta.old + ai*(2*data$A %*% (xi-theta.old))
     theta.sgd[, i+1] = theta.new
   }
@@ -93,6 +74,7 @@ asgd<-function(data, plot = T){
     theta.old = theta.sgd[, 1]
     theta.new = theta.old + a[i]*(2*data$A %*% (xi - theta.old))
     theta.sgd[, 1] = theta.new
+    #weigh the current update with previous ones
     theta.new = (1-1/(i+1))*theta.asgd[, i] + 1/(i+1)*theta.new
     theta.asgd[, i+1] = theta.new
   }
@@ -156,5 +138,5 @@ theta.sgd.im = sgd.im(d, F)[, select]
 theta.asgd = asgd(d, F)[, select]
 theta.asgd.bad = asgd.bad(d, F)[, select]
 theta.batch = batch(d, F)[, select]
-#plot.all(d, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im)
+d = list(d$A)
 save(d, theta.sgd, theta.asgd, theta.asgd.bad, theta.batch, theta.sgd.im, file="out/task2a.rda")
