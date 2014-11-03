@@ -1,0 +1,166 @@
+#MCMC for Stat221 Pset4
+
+#select the dataset to run
+args <- as.numeric(commandArgs(trailingOnly = TRUE))
+
+if(length(args) != 1) {
+  args[1] = 1
+}
+job.id = args[1]
+select = 0
+if (job.id > 10){
+  select = 1
+}
+
+
+library(MASS)
+library(scales)
+sample.data <- function(n, N, theta) {
+  rbinom(n, N, theta)
+}
+
+get.data <- function(n){
+  #get waterbucks data if n==0
+  #get impala data if n==1
+  if (n==0){
+    return (read.table('waterbuck.txt', header=T)$waterbuck)
+  }
+  if (n==1){
+    return(read.table('impala.txt', header=T)$impala)
+  }
+}
+
+log.lik <- function(N, theta, Y) {
+  # Log-likelihood of the data
+  sum(dbinom(Y, N, theta, log = T))
+}
+
+log.prior <- function(N, theta) {
+  log(1/N)
+}
+
+log.posterior <- function(N, theta, Y) {
+  log.lik(N, theta, Y) + log.prior(N, theta)
+}
+
+rpropose <- function(N.old, theta.old, y){
+  S.old = N.old * theta.old
+  S.new = rbeta(1, theta.old*c.s, c.s-theta.old*c.s)*N.old
+  theta.new = rbeta(1, theta.old*c.t, c.t-theta.old*c.t)
+  N.new = ceiling(S.new/theta.new)
+  while(N.new <= max(y)){
+    theta.new = rbeta(1, theta.old*c.t, c.t-theta.old*c.t)
+    N.new = ceiling(S.new/theta.new)
+  }
+  c(N.new, theta.new)
+}
+log.dpropose <- function(N.old, theta.old, N.new, theta.new){
+  dbeta(theta.new, theta.old*c.t, c.t-theta.old*c.t, log=T)+
+    dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
+}
+
+propose2 <- function(N.old, theta.old, y){
+  print(N.old)
+  print(theta.old)
+  S.old = N.old * theta.old
+  S.new = rbeta(1, theta.old*c.s, c.s-theta.old*c.s)*N.old
+  theta.new = rnorm(1, theta.old, 0.01)
+  N.new = ceiling(S.new/theta.new)
+  while(N.new <= max(y)){
+    theta.new = theta.new = rnorm(1, theta.old, 0.01)
+    N.new = ceiling(S.new/theta.new)
+  }
+  c(N.new, theta.new)
+}
+
+log.dpropose2 <- function(N.old, theta.old, N.new, theta.new){
+  dnorm(theta.new, theta.old, 0.01, log=T)+
+    dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
+}
+plot.chain <- function(mcmc.chain) {
+  mcmc.niters = nrow(mcmc.chain)
+  burnin = 0.4 * mcmc.niters
+  mcmc.chain = mcmc.chain[burnin:mcmc.niters, ]
+  f = kde2d(x=mcmc.chain[, 1], y=mcmc.chain[, 2], n=100)
+  image(f, xlim=c(0, NBound), ylim=c(0, thetaBound))
+}
+
+plot.chain2 <- function(mcmc.chain){
+  mcmc.niters = nrow(mcmc.chain)
+  burnin = 0.3 * mcmc.niters
+  mcmc.chain = mcmc.chain[burnin:mcmc.niters, ]
+  cutoff = quantile(mcmc.chain, 0.90)
+  mcmc.chain = data.frame(mcmc.chain)
+  mcmc.chain = mcmc.chain[which(mcmc.chain$X1 < cutoff),]
+  f = kde2d(x=mcmc.chain[, 1], y=mcmc.chain[, 2], n=100)
+  plot(mcmc.chain$X1, mcmc.chain$X2, col = alpha('black', 0.02), xlab='N', ylab='theta')
+  contour(f, col='red', lwd=2.5, add=TRUE)
+}
+
+mcmc <- function(y, mcmc.niters=1e5, rpropose, dpropose) {
+  # Complete with MH.
+  S = sum(y)
+  n = length(y)
+  y.max = max(y)
+  mcmc.chain <- matrix(nrow=mcmc.niters, ncol=2)
+  mcmc.chain[1, ] = c(max(ceiling(S/n*2), y.max), 0.5)
+  nacc <- 0
+  for(i in 2:mcmc.niters) {
+    # 1. Current state
+    N.old = mcmc.chain[i-1, 1]
+    theta.old = mcmc.chain[i-1, 2]
+    # 2. Propose new state
+    param.new = rpropose(N.old, theta.old, y)
+    N.new = param.new[1]
+    theta.new = param.new[2]
+    # 3. Ratio
+    mh.ratio = min(0, log.posterior(N.new, theta.new, y) - 
+                     log.posterior(N.old, theta.old, y) +
+                     log.dpropose(N.new, theta.new, N.old, theta.old) -
+                     log.dpropose(N.old, theta.old, N.new, theta.new))
+    if(runif(1) < exp(mh.ratio)) {
+      # Accept 
+      mcmc.chain[i, ] <- c(N.new, theta.new)
+      nacc <- nacc + 1
+    } else {
+      mcmc.chain[i, ] <- c(N.old, theta.old)
+    }
+  }
+  # Cut the burnin period.
+  print(sprintf("Acceptance ratio %.2f%%", 100 * nacc / mcmc.niters))
+  #plot.chain2(mcmc.chain)
+  return(list(mcmc.chain, 100 * nacc / mcmc.niters))
+}
+
+
+r <- function(N.new, theta.new, N.old, theta.old){
+  # sample N2 from pois(N1)
+  r1 = dpois(N.old, N.new)
+  # sample theta2 uniformly
+  r2 = dunif(theta.old, theta.new^(5/4), theta.new^(4/5))
+  return(log(r1 * r2))
+}
+
+sample.post <- function(N.old, theta.old, y){
+  while(TRUE){
+    N.new = rpois(1, N.old)
+    if(N.new>=max(y)){
+      break
+    }
+  }
+  theta.new = runif(1, theta.old^(5/4), theta.old^(4/5))
+  return(c(N.new, theta.new))
+}
+
+c.s = 400
+c.t = 1000
+
+data = get.data(select)
+mcmc.chain = mcmc(data,mcmc.niters=1e7,rpropose = rpropose, dpropose = log.dpropose)
+#mcmc.chain = mcmc(data,rpropose = propose2, dpropose = log.dpropose2)
+jpeg(filename=sprintf("mcmc_job_%d.jpg", job.id), width=900, height=600)
+plot.chain2(mcmc.chain[[1]])
+dev.off()
+accept = mcmc.chain[[2]]
+mcmc.chain = mcmc.chain[[1]]
+save(accept, mcmc.chain, file=sprintf("mcmc_job_%d.rda", job.id))
