@@ -41,15 +41,30 @@ prob.theory <- function(data, margin){
   return (1 - result)
 }
 
+mcmc.waterbuck = matrix(ncol=1, nrow=10)
+for (i in 1:10){
+  name = paste('mcmc_job_', j, '.rda',sep="")
+  load(name)
+  temp = mcmc.chain[(length(mcmc.chain)*0.3):length(mcmc.chain)]
+  temp = sum(temp>100)/length(temp)
+  mcmc.waterbuck[i] = temp
+}
+p.mcmc.waterbuck = mean(mcmc.waterbuck)
+
+mcmc.impala = matrix(ncol=1, nrow=10)
+for (i in 11:20){
+  name = paste('mcmc_job_', j, '.rda',sep="")
+  load(name)
+  temp = mcmc.chain[(length(mcmc.chain)*0.3):length(mcmc.chain)]
+  temp = sum(temp>100)/length(temp)
+  mcmc.impala[i] = temp
+}
+p.mcmc.impala = mean(mcmc.impala)
+
 margin.waterbuck = margin(data0)
 margin.impala = margin(data1)
 
-mcmc.waterbuck = mcmc.chain[(nrow(mcmc.chain)*0.3):nrow(mcmc.chain), ]
-p.mcmc.waterbuck = sum(mcmc.waterbuck>100)/nrow(mcmc.waterbuck)
 p.theory.waterbuck = prob.theory(data0, margin.waterbuck)
-
-mcmc.impala = mcmc.chain[(nrow(mcmc.chain)*0.3):nrow(mcmc.chain), ]
-p.mcmc.impala = sum(mcmc.impala>100)/nrow(mcmc.impala)
 p.theory.impala = prob.theory(data1, margin.impala)
 
 
