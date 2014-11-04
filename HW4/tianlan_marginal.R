@@ -13,7 +13,7 @@ prob <- function(N, data, log=F){
   #result = result/N*beta(S+1, n*N-S+1)
   result = result - log(N) + lbeta(S+1, n*N-S+1)
   if (log){
-    return result
+    return (result)
   }
   exp(result)
 }
@@ -23,13 +23,14 @@ margin <- function(data, log=F){
   result = 0
   N = max(data)
   count = 0
+  last = 0
   while(diff > 1e-18){
-    diff = prob(N, data)
-    result = result + diff
-    count = count + 1
+    result = result + prob(N, data)
     N = N+1
+    diff = 1/exp(last) - 1/exp(result)
+    last = result
   }
-  result
+  1/exp(result)
 }
 
 prob.theory <- function(data, margin){

@@ -47,38 +47,42 @@ rpropose <- function(N.old, theta.old, y){
   S.old = N.old * theta.old
   S.new = rbeta(1, theta.old*c.s, c.s-theta.old*c.s)*N.old
   theta.new = rbeta(1, theta.old*c.t, c.t-theta.old*c.t)
+  #theta.new = rbeta(1, 6, 6)
   N.new = ceiling(S.new/theta.new)
   while(N.new <= max(y) || N.new > 10000){
     theta.new = rbeta(1, theta.old*c.t, c.t-theta.old*c.t)
-    N.new = ceiling(S.new/theta.new)
+    #theta.new = rbeta(1, 6, 6)
+    N.new = round(S.new/theta.new)
   }
   c(N.new, theta.new)
 }
 log.dpropose <- function(N.old, theta.old, N.new, theta.new){
   dbeta(theta.new, theta.old*c.t, c.t-theta.old*c.t, log=T)+
     dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
+  #dbeta(theta.new, 6, 6, log=T)+
+   # dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
 }
 
-# rpropose1 <- function(N.old, theta.old, y){
-#   S.old = N.old * theta.old
-#   S.new = rbeta(1, theta.old*c.s, c.s-theta.old*c.s)*N.old
-#   #N.new = rpois(1, N.old)
-#   N.new = round(rnorm(1, N.old, 3))
-#   theta.new = S.new/N.new
-#   while(N.new <= max(y) || theta.new >= 1){
-#     #N.new = rpois(1, N.old)
-#     N.new = round(rnorm(1, N.old, 3))
-#     theta.new = S.new/N.new
-#   }
-#   #theta.new = min(1-1e-10, theta.new)
-#   c(N.new, theta.new)
-# }
-# log.dpropose1 <- function(N.old, theta.old, N.new, theta.new){
-#   #dpois(N.new, N.old, log=T)+
-#   #  dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
-#   dnorm(N.new, N.old, 3, log=T)+
-#     dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
-# }
+rpropose1 <- function(N.old, theta.old, y){
+  S.old = N.old * theta.old
+  S.new = rbeta(1, theta.old*c.s, c.s-theta.old*c.s)*N.old
+  N.new = rpois(1, N.old)
+  #N.new = round(rnorm(1, N.old, 3))
+  theta.new = S.new/N.new
+  while(N.new <= max(y) || theta.new >= 1){
+    N.new = rpois(1, N.old)
+    #N.new = round(rnorm(1, N.old, 3))
+    theta.new = S.new/N.new
+  }
+  #theta.new = min(1-1e-10, theta.new)
+  c(N.new, theta.new)
+}
+log.dpropose1 <- function(N.old, theta.old, N.new, theta.new){
+  dpois(N.new, N.old, log=T)+
+    dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
+  #dnorm(N.new, N.old, 3, log=T)+
+    dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
+}
 # 
 # 
 # 
@@ -175,11 +179,11 @@ mcmc <- function(y, mcmc.niters=1e5, rpropose, dpropose) {
 #   return(c(N.new, theta.new))
 # }
 
-c.s = 400
-c.t = 1000
+c.s = 1000
+c.t = 400
 
 data = get.data(select)
-mcmc.chain = mcmc(data,mcmc.niters=1e7,rpropose = rpropose, dpropose = log.dpropose)
+mcmc.chain = mcmc(data,mcmc.niters=1e6,rpropose = rpropose, dpropose = log.dpropose)
 #mcmc.chain = mcmc(data, mcmc.niters=1e5, rpropose = rpropose1, dpropose = log.dpropose1)
 #mcmc.chain = mcmc(data, mcmc.niters=1e5, rpropose = sample.post, dpropose = r)
 jpeg(filename=sprintf("mcmc_job_%d.jpg", job.id), width=900, height=600)
@@ -188,3 +192,8 @@ dev.off()
 accept = mcmc.chain[[2]]
 mcmc.chain = mcmc.chain[[1]]
 save(accept, mcmc.chain, file=sprintf("mcmc_job_%d.rda", job.id))
+
+#mh.draws = mcmc.chain[((nrow(mcmc.chain)*0.3):nrow(mcmc.chain)),]
+#mcmc.chain <- coda::mcmc(mh.draws)
+#autocorr.plot(mcmc.chain)
+
