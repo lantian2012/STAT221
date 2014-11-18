@@ -74,7 +74,7 @@ locally_iid_EM <- function(data, c, A){
     theta.new = theta.old + m$diff
     #if (sum(abs(theta.new-theta.old)) < 1e-4)
     #  inLoop = F
-    if (sum(abs(m$f)) < 1000)
+    if (sum(abs(m$f)) < 10)
       inLoop = F
     theta.old = theta.new
     count = count + 1
