@@ -24,43 +24,51 @@ margin <- function(data, log=F){
   N = max(data)
   count = 0
   last = 0
-  while(diff > 1e-18){
+  while(diff > 1e-5){
     result = result + prob(N, data)
     N = N+1
-    diff = 1/exp(last) - 1/exp(result)
+    diff = 1/last - 1/result
     last = result
+    count = count + 1
   }
-  1/exp(result)
+  print(count)
+  1/result
 }
 
 prob.theory <- function(data, margin){
   N = max(data)
   result = 0
   for (n in N:100){
-    result = result + prob(n, data)/margin
+    result = result + prob(n, data)*margin
   }
   return (1 - result)
 }
 
 mcmc.waterbuck = matrix(ncol=1, nrow=10)
-for (i in 1:10){
+accept.waterbuck = matrix(ncol=1, nrow=10)
+for (j in 1:10){
   name = paste('mcmc_job_', j, '.rda',sep="")
   load(name)
-  temp = mcmc.chain[(length(mcmc.chain)*0.3):length(mcmc.chain)]
+  temp = mcmc.chain[(nrow(mcmc.chain)*0.3):(nrow(mcmc.chain)), 1]
   temp = sum(temp>100)/length(temp)
-  mcmc.waterbuck[i] = temp
+  mcmc.waterbuck[j] = temp
+  accept.waterbuck[j] = accept
 }
 p.mcmc.waterbuck = mean(mcmc.waterbuck)
+p.mcmc.waterbuck.std = sd(mcmc.waterbuck)
 
 mcmc.impala = matrix(ncol=1, nrow=10)
-for (i in 11:20){
+accept.impala = matrix(ncol=1, nrow=10)
+for (j in 11:20){
   name = paste('mcmc_job_', j, '.rda',sep="")
   load(name)
-  temp = mcmc.chain[(length(mcmc.chain)*0.3):length(mcmc.chain)]
+  temp = mcmc.chain[(nrow(mcmc.chain)*0.3):(nrow(mcmc.chain)), 1]
   temp = sum(temp>100)/length(temp)
-  mcmc.impala[i] = temp
+  mcmc.impala[j-10] = temp
+  accept.impala[j-10] = accept
 }
 p.mcmc.impala = mean(mcmc.impala)
+p.mcmc.impala.std = sd(mcmc.impala)
 
 margin.waterbuck = margin(data0)
 margin.impala = margin(data1)

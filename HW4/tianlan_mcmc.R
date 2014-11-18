@@ -83,34 +83,6 @@ log.dpropose1 <- function(N.old, theta.old, N.new, theta.new){
   #dnorm(N.new, N.old, 3, log=T)+
     dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
 }
-# 
-# 
-# 
-# propose2 <- function(N.old, theta.old, y){
-#   print(N.old)
-#   print(theta.old)
-#   S.old = N.old * theta.old
-#   S.new = rbeta(1, theta.old*c.s, c.s-theta.old*c.s)*N.old
-#   theta.new = rnorm(1, theta.old, 0.01)
-#   N.new = ceiling(S.new/theta.new)
-#   while(N.new <= max(y)){
-#     theta.new = theta.new = rnorm(1, theta.old, 0.01)
-#     N.new = ceiling(S.new/theta.new)
-#   }
-#   c(N.new, theta.new)
-# }
-# 
-# log.dpropose2 <- function(N.old, theta.old, N.new, theta.new){
-#   dnorm(theta.new, theta.old, 0.01, log=T)+
-#     dbeta(N.new*theta.new/N.old, theta.old*c.s, c.s-theta.old*c.s, log=T)
-# }
-# plot.chain <- function(mcmc.chain) {
-#   mcmc.niters = nrow(mcmc.chain)
-#   burnin = 0.4 * mcmc.niters
-#   mcmc.chain = mcmc.chain[burnin:mcmc.niters, ]
-#   f = kde2d(x=mcmc.chain[, 1], y=mcmc.chain[, 2], n=100)
-#   image(f, xlim=c(0, NBound), ylim=c(0, thetaBound))
-# }
 
 plot.chain2 <- function(mcmc.chain){
   mcmc.niters = nrow(mcmc.chain)
@@ -160,40 +132,16 @@ mcmc <- function(y, mcmc.niters=1e5, rpropose, dpropose) {
 }
 
 
-# r <- function(N.new, theta.new, N.old, theta.old){
-#   # sample N2 from pois(N1)
-#   r1 = dpois(N.old, N.new)
-#   # sample theta2 uniformly
-#   r2 = dunif(theta.old, theta.new^(5/4), theta.new^(4/5))
-#   return(log(r1 * r2))
-# }
-# 
-# sample.post <- function(N.old, theta.old, y){
-#   while(TRUE){
-#     N.new = rpois(1, N.old)
-#     if(N.new>=max(y)){
-#       break
-#     }
-#   }
-#   theta.new = runif(1, theta.old^(5/4), theta.old^(4/5))
-#   return(c(N.new, theta.new))
-# }
 
 c.s = 1000
 c.t = 400
 
 data = get.data(select)
 mcmc.chain = mcmc(data,mcmc.niters=1e6,rpropose = rpropose, dpropose = log.dpropose)
-#mcmc.chain = mcmc(data, mcmc.niters=1e5, rpropose = rpropose1, dpropose = log.dpropose1)
-#mcmc.chain = mcmc(data, mcmc.niters=1e5, rpropose = sample.post, dpropose = r)
 jpeg(filename=sprintf("mcmc_job_%d.jpg", job.id), width=900, height=600)
 plot.chain2(mcmc.chain[[1]])
 dev.off()
 accept = mcmc.chain[[2]]
 mcmc.chain = mcmc.chain[[1]]
 save(accept, mcmc.chain, file=sprintf("mcmc_job_%d.rda", job.id))
-
-#mh.draws = mcmc.chain[((nrow(mcmc.chain)*0.3):nrow(mcmc.chain)),]
-#mcmc.chain <- coda::mcmc(mh.draws)
-#autocorr.plot(mcmc.chain)
 
