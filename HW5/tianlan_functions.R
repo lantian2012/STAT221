@@ -1,4 +1,4 @@
-locally_iid_EM <- function(data, c, A){
+locally_iid_EM <- function(data, c, A, max.iter = 240000){
   data = data[1:nrow(A), ]
   Time = ncol(data)
   J = nrow(data)
@@ -74,14 +74,15 @@ locally_iid_EM <- function(data, c, A){
     theta.new = theta.old + m$diff
     #if (sum(abs(theta.new-theta.old)) < 1e-4)
     #  inLoop = F
-    if (sum(abs(m$f)) < 10)
+    if (sum(abs(m$f)) < 10 || count >= max.iter)
       inLoop = F
     theta.old = theta.new
     count = count + 1
     if (count == 100){
       #print(sum(abs(m$f)))
-      count = 0
+      #count = 0
     }
   }
+  print(count)
   theta.old
 }

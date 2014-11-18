@@ -29,10 +29,9 @@ if (job.id == 28)
   end = n.window
 estimate = matrix(nrow = ncol(A)+1, ncol = end-start+1)
 
-
 for(i in start:end){
-  estimate[, (i-start+1)] = locally_iid_EM(data[, i:(i+w-1)], 2, A)
-  #print(i)
+  estimate[, (i-start+1)] <- locally_iid_EM(data[, i:(i+w-1)], 2, A)
+  print(i)
 }
 
 save(job.id,estimate,file=sprintf("IID_%d.rda", job.id))

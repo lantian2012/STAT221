@@ -1,12 +1,26 @@
 library(reshape2)
 library(ggplot2)
 
+data = read.csv('1router_allcount.dat')
+data = dcast(data, time~nme, value.var="value")
+names(data) <- sub(" ", ".", names(data))
+data = data[c('src.fddi', 'src.local', 'src.switch','src.corp',
+              'dst.fddi', 'dst.local', 'dst.switch', 'dst.corp')]
+data = t(as.matrix(data))
+A = matrix(c(rep(1, 4), rep(c(rep(0, 16), rep(1, 4)), 3),
+             rep(c(rep(c(1, rep(0, 3)), 4), 0), 2), rep(c(1, rep(0, 3)), 3),1, 0),
+           nrow = 7, byrow=T)
+
+w = 11
+n.window = ncol(data)-w+1
+
+
+estimates = matrix(nrow = ncol(A)+1, ncol=(n.window))
 for(i in 1:28){
-  name = paste('out/Task3_coverage_', (i)+(j-1)*4, '.rda',sep="")
+  name = paste('IID_', i, '.rda',sep="")
+  load(name)
+  estimates[, ((i-1)*10+1):((i-1)*10+ncol(estimate))] = estimate
 }
-
-
-
 
 
 result = data.frame(t(estimates[1:16, ]))
