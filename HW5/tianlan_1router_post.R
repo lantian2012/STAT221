@@ -1,9 +1,11 @@
 library(reshape2)
 library(ggplot2)
+library(grid)
 
 data = read.csv('1router_allcount.dat')
 data = dcast(data, time~nme, value.var="value")
 names(data) <- sub(" ", ".", names(data))
+data.org = data
 data = data[c('src.fddi', 'src.local', 'src.switch','src.corp',
               'dst.fddi', 'dst.local', 'dst.switch', 'dst.corp')]
 data = t(as.matrix(data))
@@ -21,6 +23,15 @@ for(i in 1:28){
   load(name)
   estimates[, ((i-1)*10+1):((i-1)*10+ncol(estimate))] = estimate
 }
+
+diff = matrix(nrow=ncol(A)+1, ncol=(n.window-1))
+for(i in 1:ncol(diff)){
+  diff[, i] = estimates[, i+1] - estimates[, i]
+}
+
+V = cov(t(diff))
+save(V, file='V.rda')
+
 
 
 result = data.frame(t(estimates[1:16, ]))
@@ -99,12 +110,13 @@ total = ggplot(data.total.plot)+ geom_line(aes(x=hour, y=value, color=variable))
         axis.ticks.x=element_blank(), axis.text.x=element_blank(),
         axis.ticks.y=element_blank(), axis.text.y=element_blank())
 grid.newpage()
-pushViewport(viewport(layout=grid.layout(2,2,heights=c(0.3,0.7), widths = c(0.8, 0.2))))
+pdf(file="tianlan_fig5.pdf") 
+pushViewport(viewport(layout=grid.layout(2,2,heights=c(0.3,0.7), widths = c(0.75, 0.25))))
 print(dst, vp=viewport(layout.pos.row=1,layout.pos.col=1))
 print(total, vp=viewport(layout.pos.row=1,layout.pos.col=2))
 print(sp, vp=viewport(layout.pos.row=2,layout.pos.col=1))
 print(org, vp=viewport(layout.pos.row=2,layout.pos.col=2))
-
+dev.off() 
 
 
 
